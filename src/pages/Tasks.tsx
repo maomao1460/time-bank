@@ -315,7 +315,9 @@ export function Tasks() {
               const child = children.find((c) => c.id === task.child_id)
               const taskRecords = records.filter((r) => r.task_id === task.id)
               const inProgressRecord = taskRecords.find((r) => r.status === 'in_progress')
+              const completedRecord = taskRecords.find((r) => r.status === 'completed' || r.status === 'approved')
               const isRunning = !!inProgressRecord
+              const isCompleted = !!completedRecord
 
               return (
                 <div key={task.id} className="p-4 hover:bg-gray-50">
@@ -344,6 +346,10 @@ export function Tasks() {
                         <span className="flex items-center gap-1 bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-lg text-sm">
                           <Loader className="w-4 h-4 animate-spin" />
                           进行中
+                        </span>
+                      ) : isCompleted ? (
+                        <span className="flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1.5 rounded-lg text-sm">
+                          已完成
                         </span>
                       ) : (
                         <button
