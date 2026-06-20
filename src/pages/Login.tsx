@@ -6,6 +6,7 @@ import { Clock } from 'lucide-react'
 export function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -16,6 +17,12 @@ export function Login() {
     e.preventDefault()
     setError('')
     setLoading(true)
+
+    if (isSignUp && password !== confirmPassword) {
+      setError('两次输入的密码不一致')
+      setLoading(false)
+      return
+    }
 
     const result = isSignUp
       ? await signUp(email, password)
@@ -74,6 +81,22 @@ export function Login() {
               />
             </div>
 
+            {isSignUp && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  确认密码
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="请再次输入密码"
+                />
+              </div>
+            )}
+
             {error && (
               <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">
                 {error}
@@ -92,7 +115,7 @@ export function Login() {
           <div className="mt-6 text-center">
             <button
               type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={() => { setIsSignUp(!isSignUp); setConfirmPassword('') }}
               className="text-indigo-600 hover:text-indigo-700 text-sm"
             >
               {isSignUp ? '已有账号？去登录' : '没有账号？去注册'}

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { supabase } from '../lib/supabase'
 import { vibrate, sendNotification } from '../lib/notifications'
 
 interface TimerState {
@@ -10,12 +11,14 @@ interface TimerState {
   taskId: string | null
   childId: string | null
   taskName: string | null
+  startedAt: string | null
 
   startTimer: (totalMinutes: number, recordId: string, taskId: string, childId: string, taskName: string) => void
   pauseTimer: () => void
   resumeTimer: () => void
   stopTimer: () => void
   tick: () => void
+  restoreTimer: () => Promise<void>
 }
 
 let tickInterval: ReturnType<typeof setInterval> | null = null
@@ -29,8 +32,10 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   taskId: null,
   childId: null,
   taskName: null,
+  startedAt: null,
 
   startTimer: (totalMinutes, recordId, taskId, childId, taskName) => {
+    const startedAt = new Date().toISOString()
     if (tickInterval) {
       clearInterval(tickInterval)
     }
@@ -45,6 +50,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
       taskId,
       childId,
       taskName,
+      startedAt,
     })
 
     tickInterval = setInterval(() => {
@@ -76,7 +82,65 @@ export const useTimerStore = create<TimerState>((set, get) => ({
       taskId: null,
       childId: null,
       taskName: null,
+      startedAt: null,
     })
+  },
+
+  restoreTimer: async () => {
+    const { data, error } = await supabase
+      .from('time_records')
+      .select('id, task_id, child_id, planned_minutes, started_at, task:tasks(name)')
+      .eq('status', 'in_progress')
+      .limit(1)
+      .single() as { data: { id: string; task_id: string; child_id: string; planned_minutes: number; started_at: string; task: { name: string }[] } | null; error: any }
+
+    if (error || !data || !data.started_at) return
+
+    const startedAtMs = new Date(data.started_at).getTime()
+    const nowMs = Date.now()
+    const elapsedSeconds = Math.floor((nowMs - startedAtMs) / 1000)
+    const totalSeconds = data.planned_minutes * 60
+    const remainingSeconds = totalSeconds - elapsedSeconds
+
+    if (remainingSeconds <= 0) {
+      await supabase
+        .from('time_records')
+        .update({
+          actual_minutes: data.planned_minutes,
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+        })
+        .eq('id', data.id)
+
+      vibrate([200, 100, 200])
+      sendNotification('时间到！', { body: '任务倒计时已结束' })
+      return
+    }
+
+    if (tickInterval) {
+      clearInterval(tickInterval)
+    }
+
+    const taskName = data.task[0]?.name || '未知任务'
+
+    set({
+      isRunning: true,
+      isPaused: false,
+      totalSeconds,
+      remainingSeconds,
+      recordId: data.id,
+      taskId: data.task_id,
+      childId: data.child_id,
+      taskName,
+      startedAt: data.started_at,
+    })
+
+    tickInterval = setInterval(() => {
+      const state = get()
+      if (state.isRunning && !state.isPaused) {
+        state.tick()
+      }
+    }, 1000)
   },
 
   tick: () => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { useTaskStore } from '../stores/taskStore'
@@ -17,6 +17,8 @@ export function Timer() {
   const {
     isRunning,
     isPaused,
+    recordId,
+    startedAt,
     formattedTime,
     progress,
     savedMinutes,
@@ -24,10 +26,8 @@ export function Timer() {
     pauseTimer,
     resumeTimer,
     stopTimer,
+    restoreTimer,
   } = useTimer()
-
-  const [recordId, setRecordId] = useState<string | null>(null)
-  const [startTime, setStartTime] = useState<Date | null>(null)
 
   const task = tasks.find((t) => t.id === taskId)
   const child = task ? children.find((c) => c.id === task.child_id) : null
@@ -41,6 +41,12 @@ export function Timer() {
   useEffect(() => {
     requestNotificationPermission()
   }, [])
+
+  useEffect(() => {
+    if (user) {
+      restoreTimer()
+    }
+  }, [user, restoreTimer])
 
   const handleStart = async () => {
     if (!task || !user) return
@@ -58,8 +64,6 @@ export function Timer() {
     })
 
     if (record) {
-      setRecordId(record.id)
-      setStartTime(new Date())
       startTimer(task.planned_minutes, record.id, task.id, task.child_id, task.name)
     }
   }
@@ -73,9 +77,9 @@ export function Timer() {
   }
 
   const handleStop = async () => {
-    if (!recordId || !startTime) return
+    if (!recordId || !startedAt) return
 
-    const actualMinutes = Math.ceil((Date.now() - startTime.getTime()) / 60000)
+    const actualMinutes = Math.ceil((Date.now() - new Date(startedAt).getTime()) / 60000)
     await completeRecord(recordId, actualMinutes)
     stopTimer()
     navigate('/review')

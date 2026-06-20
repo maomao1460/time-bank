@@ -7,12 +7,15 @@ export function useTimer() {
     isPaused,
     totalSeconds,
     remainingSeconds,
+    recordId,
+    startedAt,
     taskId,
     taskName,
     startTimer,
     pauseTimer,
     resumeTimer,
     stopTimer,
+    restoreTimer,
   } = useTimerStore()
 
   const formattedTime = useMemo(() => {
@@ -40,6 +43,8 @@ export function useTimer() {
     isPaused,
     totalSeconds,
     remainingSeconds,
+    recordId,
+    startedAt,
     taskId,
     taskName,
     formattedTime,
@@ -49,5 +54,6 @@ export function useTimer() {
     pauseTimer,
     resumeTimer,
     stopTimer,
+    restoreTimer,
   }
 }
