@@ -145,7 +145,7 @@ export function Timer() {
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-4xl font-bold text-gray-900">{formattedTime}</span>
-            {isRunning && savedMinutes > 0 && (
+            {isRunning && (
               <span className="text-sm text-green-600 mt-1">
                 已使用 {savedMinutes} 分钟
               </span>

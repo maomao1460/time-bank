@@ -315,38 +315,27 @@ export function Tasks() {
               const child = children.find((c) => c.id === task.child_id)
               const taskRecords = records.filter((r) => r.task_id === task.id)
               const inProgressRecord = taskRecords.find((r) => r.status === 'in_progress')
-              const latestRecord = taskRecords.sort(
-                (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-              )[0]
               const isRunning = !!inProgressRecord
 
               return (
                 <div key={task.id} className="p-4 hover:bg-gray-50">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        {task.scheduled_date && task.scheduled_time ? (
-                          <h3 className="font-medium text-gray-900">
-                            {new Date(task.scheduled_date + 'T00:00:00').toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}
-                            -{task.scheduled_time.slice(0, 5)}
-                            -{task.name}
-                          </h3>
-                        ) : (
-                          <h3 className="font-medium text-gray-900">{task.name}</h3>
-                        )}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-medium text-gray-900">{task.name}</h3>
                         <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
                           {task.category}
                         </span>
+                        {task.scheduled_date && task.scheduled_time && (
+                          <span className="px-2 py-0.5 text-xs bg-indigo-100 text-indigo-700 rounded font-medium">
+                            {new Date(task.scheduled_date + 'T00:00:00').toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' })} {task.scheduled_time.slice(0, 5)}
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm text-gray-500 mt-1">
                         计划时间：{task.planned_minutes}分钟
                         {child && ` · ${child.name}`}
                       </p>
-                      {latestRecord && (
-                        <p className="text-xs text-gray-400 mt-1">
-                          上次：{new Date(latestRecord.created_at).toLocaleDateString('zh-CN')} {new Date(latestRecord.created_at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       {isRunning ? (
