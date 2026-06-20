@@ -11,8 +11,6 @@ interface TaskFormData {
   planned_minutes: number
   child_id: string
   is_template: boolean
-  scheduled_date: string
-  scheduled_time: string
 }
 
 export function Tasks() {
@@ -39,8 +37,6 @@ export function Tasks() {
     planned_minutes: 30,
     child_id: '',
     is_template: false,
-    scheduled_date: '',
-    scheduled_time: '',
   })
   const [loading, setLoading] = useState(true)
   const [selectChildForTemplate, setSelectChildForTemplate] = useState<string | null>(null)
@@ -65,10 +61,9 @@ export function Tasks() {
         name: formData.name,
         category: formData.category,
         planned_minutes: formData.planned_minutes,
-        scheduled_date: formData.scheduled_date || null,
-        scheduled_time: formData.scheduled_time || null,
       })
     } else {
+      const now = new Date()
       await addTask({
         parent_id: user.id,
         child_id: formData.child_id,
@@ -77,14 +72,14 @@ export function Tasks() {
         planned_minutes: formData.planned_minutes,
         is_active: true,
         is_template: formData.is_template,
-        scheduled_date: formData.scheduled_date || null,
-        scheduled_time: formData.scheduled_time || null,
+        scheduled_date: now.toISOString().split('T')[0],
+        scheduled_time: now.toTimeString().slice(0, 5),
       })
     }
 
     setShowForm(false)
     setEditingTask(null)
-    setFormData({ name: '', category: '生活', planned_minutes: 30, child_id: children[0]?.id || '', is_template: false, scheduled_date: '', scheduled_time: '' })
+    setFormData({ name: '', category: '生活', planned_minutes: 30, child_id: children[0]?.id || '', is_template: false })
   }
 
   const handleEdit = (task: typeof tasks[0]) => {
@@ -95,8 +90,6 @@ export function Tasks() {
       planned_minutes: task.planned_minutes,
       child_id: task.child_id,
       is_template: task.is_template,
-      scheduled_date: task.scheduled_date || '',
-      scheduled_time: task.scheduled_time || '',
     })
     setShowForm(true)
   }
@@ -140,7 +133,7 @@ export function Tasks() {
         <button
           onClick={() => {
             setEditingTask(null)
-    setFormData({ name: '', category: '生活', planned_minutes: 30, child_id: children[0]?.id || '', is_template: false, scheduled_date: '', scheduled_time: '' })
+    setFormData({ name: '', category: '生活', planned_minutes: 30, child_id: children[0]?.id || '', is_template: false })
             setShowForm(true)
           }}
           className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
@@ -275,33 +268,6 @@ export function Tasks() {
                       </option>
                     ))}
                   </select>
-                </div>
-              )}
-
-              {!editingTask && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      计划日期
-                    </label>
-                    <input
-                      type="date"
-                      value={formData.scheduled_date}
-                      onChange={(e) => setFormData({ ...formData, scheduled_date: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      计划时间
-                    </label>
-                    <input
-                      type="time"
-                      value={formData.scheduled_time}
-                      onChange={(e) => setFormData({ ...formData, scheduled_time: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </div>
                 </div>
               )}
 
