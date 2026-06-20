@@ -78,10 +78,10 @@ export function Review() {
       </div>
 
       {currentBank && (
-        <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-4 text-white">
+        <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white">
           <div className="flex items-center justify-between">
-            <span className="text-sm opacity-90">当前时间余额</span>
-            <span className="text-2xl font-bold">{formatMinutes(currentBank.balance_minutes || 0)}</span>
+            <span className="text-lg opacity-90">当前时间余额</span>
+            <span className="text-3xl font-bold">{formatMinutes(currentBank.balance_minutes || 0)}</span>
           </div>
         </div>
       )}
