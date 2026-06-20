@@ -87,6 +87,9 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   },
 
   restoreTimer: async () => {
+    const currentState = get()
+    if (currentState.isRunning && currentState.recordId) return
+
     const { data, error } = await supabase
       .from('time_records')
       .select('id, task_id, child_id, planned_minutes, started_at, task:tasks(name)')
@@ -152,9 +155,26 @@ export const useTimerStore = create<TimerState>((set, get) => ({
         clearInterval(tickInterval)
         tickInterval = null
       }
+
+      if (state.recordId) {
+        supabase
+          .from('time_records')
+          .update({
+            actual_minutes: Math.ceil(state.totalSeconds / 60),
+            status: 'completed',
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', state.recordId)
+      }
+
       set({
         isRunning: false,
         remainingSeconds: 0,
+        recordId: null,
+        taskId: null,
+        childId: null,
+        taskName: null,
+        startedAt: null,
       })
       vibrate([200, 100, 200])
       sendNotification('时间到！', { body: '任务倒计时已结束' })
