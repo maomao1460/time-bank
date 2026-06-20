@@ -147,7 +147,7 @@ export function Timer() {
             <span className="text-4xl font-bold text-gray-900">{formattedTime}</span>
             {isRunning && savedMinutes > 0 && (
               <span className="text-sm text-green-600 mt-1">
-                已节约 {savedMinutes} 分钟
+                已使用 {savedMinutes} 分钟
               </span>
             )}
           </div>

@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { useTaskStore } from '../stores/taskStore'
-import { Plus, Pencil, Trash2, X, Play, Zap, Clock } from 'lucide-react'
+import { useBankStore } from '../stores/bankStore'
+import { Plus, Pencil, Trash2, X, Play, Zap, Clock, Loader } from 'lucide-react'
 
 interface TaskFormData {
   name: string
@@ -27,6 +28,7 @@ export function Tasks() {
     updateTask,
     deleteTask,
   } = useTaskStore()
+  const { records, fetchRecords } = useBankStore()
   const [showForm, setShowForm] = useState(false)
   const [editingTask, setEditingTask] = useState<string | null>(null)
   const [formData, setFormData] = useState<TaskFormData>({
@@ -45,9 +47,10 @@ export function Tasks() {
         fetchChildren(user.id),
         fetchTasks(user.id),
         fetchQuickTasks(user.id),
+        fetchRecords(user.id),
       ]).then(() => setLoading(false))
     }
-  }, [user, fetchChildren, fetchTasks, fetchQuickTasks])
+  }, [user, fetchChildren, fetchTasks, fetchQuickTasks, fetchRecords])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -307,6 +310,13 @@ export function Tasks() {
           <div className="divide-y divide-gray-200">
             {tasks.map((task) => {
               const child = children.find((c) => c.id === task.child_id)
+              const taskRecords = records.filter((r) => r.task_id === task.id)
+              const inProgressRecord = taskRecords.find((r) => r.status === 'in_progress')
+              const latestRecord = taskRecords.sort(
+                (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+              )[0]
+              const isRunning = !!inProgressRecord
+
               return (
                 <div key={task.id} className="p-4 hover:bg-gray-50">
                   <div className="flex items-center justify-between">
@@ -321,15 +331,27 @@ export function Tasks() {
                         计划时间：{task.planned_minutes}分钟
                         {child && ` · ${child.name}`}
                       </p>
+                      {latestRecord && (
+                        <p className="text-xs text-gray-400 mt-1">
+                          上次：{new Date(latestRecord.created_at).toLocaleDateString('zh-CN')} {new Date(latestRecord.created_at).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => navigate(`/tasks/${task.id}/timer`)}
-                        className="flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-indigo-700"
-                      >
-                        <Play className="w-4 h-4" />
-                        开始
-                      </button>
+                      {isRunning ? (
+                        <span className="flex items-center gap-1 bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-lg text-sm">
+                          <Loader className="w-4 h-4 animate-spin" />
+                          进行中
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => navigate(`/tasks/${task.id}/timer`)}
+                          className="flex items-center gap-1 bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-indigo-700"
+                        >
+                          <Play className="w-4 h-4" />
+                          开始
+                        </button>
+                      )}
                       <button
                         onClick={() => handleEdit(task)}
                         className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg"
