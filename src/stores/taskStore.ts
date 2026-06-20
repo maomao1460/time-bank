@@ -18,6 +18,8 @@ interface Task {
   planned_minutes: number
   is_active: boolean
   is_template: boolean
+  scheduled_date: string | null
+  scheduled_time: string | null
   created_at: string
 }
 

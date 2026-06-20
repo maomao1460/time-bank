@@ -40,6 +40,9 @@ export type Database = {
           category: string | null
           planned_minutes: number
           is_active: boolean
+          is_template: boolean
+          scheduled_date: string | null
+          scheduled_time: string | null
           created_at: string
         }
         Insert: {
@@ -50,6 +53,9 @@ export type Database = {
           category?: string | null
           planned_minutes: number
           is_active?: boolean
+          is_template?: boolean
+          scheduled_date?: string | null
+          scheduled_time?: string | null
           created_at?: string
         }
         Update: {
@@ -60,6 +66,9 @@ export type Database = {
           category?: string | null
           planned_minutes?: number
           is_active?: boolean
+          is_template?: boolean
+          scheduled_date?: string | null
+          scheduled_time?: string | null
           created_at?: string
         }
       }

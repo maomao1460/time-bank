@@ -11,6 +11,8 @@ interface TaskFormData {
   planned_minutes: number
   child_id: string
   is_template: boolean
+  scheduled_date: string
+  scheduled_time: string
 }
 
 export function Tasks() {
@@ -37,6 +39,8 @@ export function Tasks() {
     planned_minutes: 30,
     child_id: '',
     is_template: false,
+    scheduled_date: '',
+    scheduled_time: '',
   })
   const [loading, setLoading] = useState(true)
   const [selectChildForTemplate, setSelectChildForTemplate] = useState<string | null>(null)
@@ -61,6 +65,8 @@ export function Tasks() {
         name: formData.name,
         category: formData.category,
         planned_minutes: formData.planned_minutes,
+        scheduled_date: formData.scheduled_date || null,
+        scheduled_time: formData.scheduled_time || null,
       })
     } else {
       await addTask({
@@ -71,12 +77,14 @@ export function Tasks() {
         planned_minutes: formData.planned_minutes,
         is_active: true,
         is_template: formData.is_template,
+        scheduled_date: formData.scheduled_date || null,
+        scheduled_time: formData.scheduled_time || null,
       })
     }
 
     setShowForm(false)
     setEditingTask(null)
-    setFormData({ name: '', category: '生活', planned_minutes: 30, child_id: children[0]?.id || '', is_template: false })
+    setFormData({ name: '', category: '生活', planned_minutes: 30, child_id: children[0]?.id || '', is_template: false, scheduled_date: '', scheduled_time: '' })
   }
 
   const handleEdit = (task: typeof tasks[0]) => {
@@ -87,6 +95,8 @@ export function Tasks() {
       planned_minutes: task.planned_minutes,
       child_id: task.child_id,
       is_template: task.is_template,
+      scheduled_date: task.scheduled_date || '',
+      scheduled_time: task.scheduled_time || '',
     })
     setShowForm(true)
   }
@@ -130,7 +140,7 @@ export function Tasks() {
         <button
           onClick={() => {
             setEditingTask(null)
-            setFormData({ name: '', category: '生活', planned_minutes: 30, child_id: children[0]?.id || '', is_template: false })
+    setFormData({ name: '', category: '生活', planned_minutes: 30, child_id: children[0]?.id || '', is_template: false, scheduled_date: '', scheduled_time: '' })
             setShowForm(true)
           }}
           className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
@@ -269,6 +279,33 @@ export function Tasks() {
               )}
 
               {!editingTask && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      计划日期
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.scheduled_date}
+                      onChange={(e) => setFormData({ ...formData, scheduled_date: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      计划时间
+                    </label>
+                    <input
+                      type="time"
+                      value={formData.scheduled_time}
+                      onChange={(e) => setFormData({ ...formData, scheduled_time: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {!editingTask && (
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
@@ -322,7 +359,15 @@ export function Tasks() {
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-gray-900">{task.name}</h3>
+                        {task.scheduled_date && task.scheduled_time ? (
+                          <h3 className="font-medium text-gray-900">
+                            {new Date(task.scheduled_date + 'T00:00:00').toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}
+                            -{task.scheduled_time.slice(0, 5)}
+                            -{task.name}
+                          </h3>
+                        ) : (
+                          <h3 className="font-medium text-gray-900">{task.name}</h3>
+                        )}
                         <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
                           {task.category}
                         </span>
