@@ -188,6 +188,7 @@ export const useTaskStore = create<TaskState>((set) => ({
   },
 
   createTaskFromTemplate: async (template, childId) => {
+    const now = new Date()
     const { data, error } = await supabase
       .from('tasks')
       .insert({
@@ -198,6 +199,8 @@ export const useTaskStore = create<TaskState>((set) => ({
         planned_minutes: template.planned_minutes,
         is_active: true,
         is_template: false,
+        scheduled_date: now.toISOString().split('T')[0],
+        scheduled_time: now.toTimeString().slice(0, 5),
       })
       .select()
       .single()
