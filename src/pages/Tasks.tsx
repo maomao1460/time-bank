@@ -323,7 +323,9 @@ export function Tasks() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-medium text-gray-900">{task.name}</h3>
-                        <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
+                      </div>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <span className="px-2 py-0.5 text-xs bg-emerald-100 text-emerald-700 rounded font-medium">
                           {task.category}
                         </span>
                         {task.scheduled_date && task.scheduled_time && (
