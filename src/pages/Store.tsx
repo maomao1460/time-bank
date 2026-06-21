@@ -246,20 +246,24 @@ export function Store() {
                     <span className="text-sm text-gray-500">/次</span>
                   </div>
 
-                  {purchased.length > 0 && (
-                    <div className="space-y-1 mb-4">
-                      {purchased.map((p) => (
-                        <div key={p.period} className="flex items-center justify-between text-sm">
-                          <span className="text-gray-500">
-                            {p.period === 'day' ? '每天' : p.period === 'week' ? '每周' : '每月'}限制
-                          </span>
-                          <span className={p.count >= p.max_count ? 'text-red-500 font-medium' : 'text-gray-600'}>
-                            {p.count}/{p.max_count}次
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <div className="mb-4">
+                    {purchased.length > 0 ? (
+                      <div className="space-y-1">
+                        {purchased.map((p) => (
+                          <div key={p.period} className="flex items-center justify-between text-sm">
+                            <span className="text-gray-500">
+                              {p.period === 'day' ? '每天' : p.period === 'week' ? '每周' : '每月'}限制
+                            </span>
+                            <span className={p.count >= p.max_count ? 'text-red-500 font-medium' : 'text-gray-600'}>
+                              {p.count}/{p.max_count}次
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-400">无购买限制</p>
+                    )}
+                  </div>
 
                   <button
                     onClick={() => setConfirmPurchase({ id: item.id, name: item.name, price: item.price_minutes })}

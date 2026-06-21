@@ -22,6 +22,39 @@ interface TimerState {
 }
 
 let tickInterval: ReturnType<typeof setInterval> | null = null
+let visibilityHandler: (() => void) | null = null
+
+function registerVisibilityListener(get: () => TimerState, set: (state: Partial<TimerState>) => void) {
+  if (visibilityHandler) {
+    document.removeEventListener('visibilitychange', visibilityHandler)
+  }
+  visibilityHandler = () => {
+    if (document.visibilityState !== 'visible') return
+    const state = get()
+    if (!state.isRunning || !state.startedAt || state.isPaused) return
+    const elapsedSeconds = Math.floor((Date.now() - new Date(state.startedAt).getTime()) / 1000)
+    const remaining = state.totalSeconds - elapsedSeconds
+    if (remaining <= 0) {
+      if (tickInterval) {
+        clearInterval(tickInterval)
+        tickInterval = null
+      }
+      if (state.recordId) {
+        supabase.from('time_records').update({
+          actual_minutes: Math.ceil(state.totalSeconds / 60),
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+        }).eq('id', state.recordId)
+      }
+      set({ isRunning: false, remainingSeconds: 0, recordId: null, taskId: null, childId: null, taskName: null, startedAt: null })
+      vibrate([200, 100, 200])
+      sendNotification('时间到！', { body: '任务倒计时已结束' })
+    } else {
+      set({ remainingSeconds: remaining })
+    }
+  }
+  document.addEventListener('visibilitychange', visibilityHandler)
+}
 
 export const useTimerStore = create<TimerState>((set, get) => ({
   isRunning: false,
@@ -59,6 +92,8 @@ export const useTimerStore = create<TimerState>((set, get) => ({
         state.tick()
       }
     }, 1000)
+
+    registerVisibilityListener(get, set)
   },
 
   pauseTimer: () => {
@@ -73,6 +108,10 @@ export const useTimerStore = create<TimerState>((set, get) => ({
     if (tickInterval) {
       clearInterval(tickInterval)
       tickInterval = null
+    }
+    if (visibilityHandler) {
+      document.removeEventListener('visibilitychange', visibilityHandler)
+      visibilityHandler = null
     }
     set({
       isRunning: false,
@@ -144,6 +183,8 @@ export const useTimerStore = create<TimerState>((set, get) => ({
         state.tick()
       }
     }, 1000)
+
+    registerVisibilityListener(get, set)
   },
 
   tick: () => {
